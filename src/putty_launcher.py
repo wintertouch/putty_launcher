@@ -53,24 +53,45 @@ class VerticalScrolledFrame(tk.Frame):
         
         return
 
-class App(VerticalScrolledFrame):
+class VarCheckbutton(tk.Checkbutton):
+    def  __init__(self, master=None, **kw):
+        self.var = tk.IntVar()
+        kw['variable'] = self.var
+        tk.Checkbutton.__init__(self, master, kw)
+        
+class App(tk.Frame):
     def __init__(self, master=None):
-        VerticalScrolledFrame.__init__(self, master)
+        tk.Frame.__init__(self, master)
         self.session_names = []
         self.buttons = []
         self.button_vars = []
         
-        control_frame = tk.Frame(self.interior)
+        control_frame = tk.Frame(self)
         tk.Button(control_frame, text="Refresh", width=10,
-                  command=lambda:self.refresh(self.btn_frame)).grid(padx=10)
+                  command=lambda:self.refresh(self.btn_frame.interior)).grid(padx=10)
         tk.Button(control_frame, text="Launch", width=10,
                   command=self.launch).grid(padx=10, row=0, column=1)
         control_frame.pack(pady=20)
         
-        self.btn_frame = tk.Frame(self.interior)
-        self.refresh(self.btn_frame)
-        self.btn_frame.pack(pady=10)
-                           
+        self.btn_frame = VerticalScrolledFrame(self)
+        self.refresh(self.btn_frame.interior)
+        self.btn_frame.pack(pady=10, fill=tk.BOTH, expand=tk.TRUE)
+        
+        self.testfr = tk.Frame(self)
+        tk.Button(self.testfr, text="rst test", relief=tk.RAISED, command=self.rst_test_btn).pack()
+        VarCheckbutton(self.testfr, text="test", indicatoron=0, relief=tk.RAISED).pack()
+        tk.Checkbutton(self.testfr, text="test 2", indicatoron=0, relief=tk.RAISED).pack()
+        self.testfr.pack(fill=tk.BOTH, expand=tk.TRUE)
+
+    def rst_test_btn(self):
+        for child in self.testfr.winfo_children():
+            name = child.__class__.__name__
+            if name == 'VarCheckbutton':
+                if child.var.get():
+                    child.deselect()
+            elif name == 'Checkbutton':
+                child.deselect()
+            
     def get_sessions(self):
         aReg = reg.ConnectRegistry(None, reg.HKEY_CURRENT_USER)
         aKey = reg.OpenKey(aReg, r"Software\SimonTatham\PuTTY\Sessions")
@@ -91,14 +112,14 @@ class App(VerticalScrolledFrame):
                 self.buttons = []
                 self.button_vars = []
             self.draw_sessions(master)
-        
+
     def draw_sessions(self, master):
         for idx in range(len(self.session_names)):
             text = self.session_names[idx]
             var = tk.IntVar()
             self.buttons.append(tk.Checkbutton(master, text=text, indicatoron=0, relief=tk.RAISED,
-                           height=2, width=15, variable=var))
-            self.buttons[-1].pack(padx=5, pady=5)
+                           height=2, width=14, variable=var))
+            self.buttons[-1].grid(padx=10, pady=5, column=(idx % 2), row=int(idx/2))
             self.button_vars.append(var)
     
     def launch(self):
@@ -110,7 +131,7 @@ class App(VerticalScrolledFrame):
 def main(argv):
     top = tk.Tk()
     top.title('PuTTY Launcher')
-    top.geometry('225x400')
+    top.geometry('275x400')
     
     try:
         app = App(master=top)
