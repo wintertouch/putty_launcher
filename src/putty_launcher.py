@@ -63,34 +63,17 @@ class App(tk.Frame):
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
         self.session_names = []
-        self.buttons = []
-        self.button_vars = []
         
         control_frame = tk.Frame(self)
         tk.Button(control_frame, text="Refresh", width=10,
                   command=lambda:self.refresh(self.btn_frame.interior)).grid(padx=10)
         tk.Button(control_frame, text="Launch", width=10,
-                  command=self.launch).grid(padx=10, row=0, column=1)
+                  command=lambda:self.launch(self.btn_frame.interior)).grid(padx=10, row=0, column=1)
         control_frame.pack(pady=20)
         
         self.btn_frame = VerticalScrolledFrame(self)
         self.refresh(self.btn_frame.interior)
         self.btn_frame.pack(pady=10, fill=tk.BOTH, expand=tk.TRUE)
-        
-        self.testfr = tk.Frame(self)
-        tk.Button(self.testfr, text="rst test", relief=tk.RAISED, command=self.rst_test_btn).pack()
-        VarCheckbutton(self.testfr, text="test", indicatoron=0, relief=tk.RAISED).pack()
-        tk.Checkbutton(self.testfr, text="test 2", indicatoron=0, relief=tk.RAISED).pack()
-        self.testfr.pack(fill=tk.BOTH, expand=tk.TRUE)
-
-    def rst_test_btn(self):
-        for child in self.testfr.winfo_children():
-            name = child.__class__.__name__
-            if name == 'VarCheckbutton':
-                if child.var.get():
-                    child.deselect()
-            elif name == 'Checkbutton':
-                child.deselect()
             
     def get_sessions(self):
         aReg = reg.ConnectRegistry(None, reg.HKEY_CURRENT_USER)
@@ -109,25 +92,32 @@ class App(tk.Frame):
         if old_sessions != self.session_names:
             for item in master.winfo_children():
                 item.destroy()
-                self.buttons = []
-                self.button_vars = []
             self.draw_sessions(master)
 
     def draw_sessions(self, master):
+        f = None
         for idx in range(len(self.session_names)):
-            text = self.session_names[idx]
-            var = tk.IntVar()
-            self.buttons.append(tk.Checkbutton(master, text=text, indicatoron=0, relief=tk.RAISED,
-                           height=2, width=14, variable=var))
-            self.buttons[-1].grid(padx=10, pady=5, column=(idx % 2), row=int(idx/2))
-            self.button_vars.append(var)
-    
-    def launch(self):
-        for idx in range(len(self.session_names)):
-            if self.button_vars[idx].get() == 1:
-                Popen(['putty.exe', '-load', self.session_names[idx]])
-                self.buttons[idx].deselect()
+            if (idx % 2) == 0:
+                side = tk.LEFT
+                if f:
+                    f.pack()
+                f = tk.Frame(master)
+            else:
+                side = tk.RIGHT
                 
+            text = self.session_names[idx]
+            VarCheckbutton(f, text=text, indicatoron=0, relief=tk.RAISED,
+                           height=2, width=14).pack(padx=10, pady=5, side=side)
+        if f:
+            f.pack()
+                
+    def launch(self, frame):
+        for child_frame in frame.winfo_children():
+            for button in child_frame.winfo_children():
+                if button.var.get():
+                    Popen(['putty.exe', '-load', button['text']])
+                    button.deselect()
+                    
 def main(argv):
     top = tk.Tk()
     top.title('PuTTY Launcher')
