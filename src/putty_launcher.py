@@ -48,8 +48,16 @@ class VerticalScrolledFrame(tk.Frame):
         canvas.bind('<Configure>', _configure_canvas)
         
         def _on_mousewheel(event):
-            canvas.yview_scroll(-1*(event.delta/120), tk.UNITS)
+            canvas.yview_scroll(-2*(event.delta/120), tk.UNITS)
         canvas.bind_all('<MouseWheel>', _on_mousewheel)
+        
+        def _on_pgup(event):
+            canvas.yview_scroll(-2*(event.delta/33), tk.UNITS)
+        canvas.bind_all('<KeyPress-Prior>', _on_pgup)
+        
+        def _on_pgdn(event):
+            canvas.yview_scroll(2*(event.delta/34), tk.UNITS)
+        canvas.bind_all('<KeyPress-Next>', _on_pgdn)
         
         return
 
