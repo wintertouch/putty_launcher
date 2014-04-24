@@ -65,10 +65,12 @@ class App(tk.Frame):
         self.session_names = []
         
         control_frame = tk.Frame(self)
+        tk.Button(control_frame, text="PuTTY", width=10,
+                  command=self.putty).grid(padx=15, pady=5)
         tk.Button(control_frame, text="Refresh", width=10,
-                  command=lambda:self.refresh(self.btn_frame.interior)).grid(padx=10)
-        tk.Button(control_frame, text="Launch", width=10,
-                  command=lambda:self.launch(self.btn_frame.interior)).grid(padx=10, row=0, column=1)
+                  command=lambda:self.refresh(self.btn_frame.interior)).grid(padx=15, pady=5, row=1, column=0)
+        tk.Button(control_frame, text="Launch", width=10, height=2,
+                  command=lambda:self.launch(self.btn_frame.interior)).grid(padx=15, row=0, column=1, rowspan=2)
         control_frame.pack(pady=20)
         
         self.btn_frame = VerticalScrolledFrame(self)
@@ -117,6 +119,9 @@ class App(tk.Frame):
                 if button.var.get():
                     Popen(['putty.exe', '-load', button['text']])
                     button.deselect()
+    
+    def putty(self):
+        Popen(['putty.exe'])
                     
 def main(argv):
     top = tk.Tk()
